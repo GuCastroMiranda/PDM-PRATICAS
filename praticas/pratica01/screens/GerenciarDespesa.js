@@ -1,6 +1,6 @@
 import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
 import React, { useState } from 'react';
-import DateTimePicker from '@react-navigation-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 function GerenciarDespesa() {
   const [data, setData] = useState(new Date());
