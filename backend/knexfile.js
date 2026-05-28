@@ -1,11 +1,17 @@
-const knex = require('knex');
 const path = require('path');
 
-const config = {
+/**
+ * @type { Object.<string, import("knex").Knex.Config> }
+ */
+module.exports = {
   development: {
-    client: 'sqlite3',
+    client: 'pg',
     connection: {
-      filename: path.resolve(__dirname, 'database.sqlite'),
+      host: process.env.DB_HOST || '127.0.0.1',
+      port: process.env.DB_PORT || 5432,
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASS || 'postgres',
+      database: process.env.DB_NAME || 'gestao_financeira',
     },
     migrations: {
       directory: path.resolve(__dirname, 'src', 'database', 'migrations'),
@@ -13,8 +19,19 @@ const config = {
     seeds: {
       directory: path.resolve(__dirname, 'src', 'database', 'seeds'),
     },
-    useNullAsDefault: true,
   },
-};
 
-module.exports = config;
+  production: {
+    client: 'pg',
+    connection: {
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    },
+    migrations: {
+      directory: path.resolve(__dirname, 'src', 'database', 'migrations'),
+    },
+    seeds: {
+      directory: path.resolve(__dirname, 'src', 'database', 'seeds'),
+    },
+  }
+};

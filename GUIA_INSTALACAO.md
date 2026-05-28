@@ -1,37 +1,41 @@
 # Guia de Configuração - Gestão Financeira
 
-Este guia explica como configurar e rodar o projeto (Backend e Frontend) em uma nova máquina.
+Este guia explica como configurar e rodar o projeto (Backend e Frontend) em uma nova máquina usando **PostgreSQL**.
 
 ## Pré-requisitos
 - Node.js instalado (v18 ou superior)
-- Git (opcional, para clonar)
-- Celular com o app **Expo Go** instalado (para testar o Frontend)
+- **PostgreSQL** instalado e rodando na porta 5432
+- Celular com o app **Expo Go** instalado (para testar em dispositivo físico)
 
 ---
 
-## 🖥️ 1. Configuração do Backend (Node.js)
+## 🖥️ 1. Configuração do Backend (Node.js + PostgreSQL)
 
-O backend utiliza Express, SQLite e Knex. Siga os passos abaixo:
+1. **Criação do Banco de Dados:**
+   Abra o seu terminal do PostgreSQL ou pgAdmin e crie o banco de dados:
+   ```sql
+   CREATE DATABASE gestao_financeira;
+   ```
 
-1. Abra o terminal e navegue até a pasta do backend:
+2. **Configuração de Credenciais:**
+   O projeto está configurado por padrão para usar:
+   - **User:** `postgres`
+   - **Password:** `postgres`
+   
+   *Se a sua senha for diferente, altere no arquivo `backend/knexfile.js`.*
+
+3. **Instalação e Migrations:**
+   Abra o terminal na pasta `backend`:
    ```bash
    cd backend
-   ```
-
-2. Instale as dependências:
-   ```bash
    npm install
+   npx knex migrate:latest
+   npx knex seed:run
    ```
 
-3. Configure o banco de dados (Cria as tabelas e popula com as categorias iniciais):
+4. **Inicie o servidor:**
    ```bash
-   npm run migrate
-   npm run seed
-   ```
-
-4. Inicie o servidor:
-   ```bash
-   npm run start
+   npm start
    ```
    *O servidor rodará em `http://localhost:3000`.*
 
@@ -41,47 +45,34 @@ O backend utiliza Express, SQLite e Knex. Siga os passos abaixo:
 
 1. Abra um **novo terminal** na raiz do projeto:
    ```bash
-   # Certifique-se de estar na pasta raiz (pratica01)
    npm install
    ```
 
-2. **Configuração de IP (Importante para testes no Celular):**
-   Se você for testar em um dispositivo físico usando o Expo Go, você deve alterar o endereço do servidor para o IP da sua máquina.
-   - Abra o arquivo `services/api.js`.
-   - Substitua `localhost` pelo seu IP local (Ex: `192.168.1.10`).
-   ```javascript
-   // services/api.js
-   const api = axios.create({
-     baseURL: 'http://SEU_IP_AQUI:3000', 
-   });
-   ```
+2. **Configuração de IP (Atenção Avaliador):**
+   - O projeto está configurado por padrão para `localhost` (funciona em emuladores).
+   - Para testar em um **celular físico**, abra o arquivo `services/api.js` e troque `localhost` pelo seu IP local.
 
 3. Inicie o Expo:
    ```bash
    npm start
    ```
 
-4. No celular, abra o app **Expo Go** e escaneie o QR Code que aparecerá no terminal.
-
 ---
 
 ## 🛠️ Scripts Úteis
 
 ### Backend
-- `npm run start`: Inicia o servidor com Nodemon (reinicia automaticamente ao salvar).
-- `npm run migrate`: Cria as tabelas do banco de dados do zero.
-- `npm run seed`: Reseta e insere as categorias padrão.
+- `npx knex migrate:latest`: Cria a estrutura das tabelas.
+- `npx knex seed:run`: Insere as categorias padrão (Alimentação, Transporte, etc).
 
 ### Frontend
-- `npm start`: Inicia o servidor de desenvolvimento do Expo.
-- `npm run android`: Inicia o app diretamente em um emulador Android.
-- `npm run ios`: Inicia o app diretamente em um emulador iOS.
+- `npm start`: Abre o Metro Bundler do Expo.
+- `a`: Pressione no terminal para abrir no emulador Android.
+- `r`: Pressione no terminal para recarregar o app.
 
 ---
 
 ## 📂 Estrutura do Projeto
-- `/backend`: API Node.js, Banco de Dados SQLite (Knex) e Coleção Postman.
-- `/components`: Componentes reutilizáveis do React Native.
-- `/screens`: Telas da aplicação (Login, Resumo, Gerenciar).
-- `/store`: Contexto de autenticação.
-- `/services`: Configuração do Axios para chamadas à API.
+- `/backend`: API Node.js com PostgreSQL (Knex).
+- `/screens`: Telas da aplicação (Resumo, Gerenciar, Categorias).
+- `/services/api.js`: Configuração de conexão com o Backend.

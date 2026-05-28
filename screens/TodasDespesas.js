@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import DespesaSaida from '../components/despesa/DespesaSaida';
 import MonthYearFilter from '../components/MonthYearFilter';
@@ -13,9 +13,10 @@ function TodasDespesas() {
   const fetchDespesas = useCallback(async () => {
     try {
       const response = await api.get('/transactions');
-      setDespesas(response.data);
+      setDespesas(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Erro ao buscar despesas', error);
+      setDespesas([]); // Garante que despesas seja um array mesmo em caso de erro
     }
   }, []);
 
@@ -25,7 +26,7 @@ function TodasDespesas() {
     }
   }, [isFocused, fetchDespesas]);
 
-  const filteredDespesas = despesas.filter(t => {
+  const filteredDespesas = (Array.isArray(despesas) ? despesas : []).filter(t => {
     const tDate = new Date(t.date);
     return tDate.getMonth() === selectedDate.getMonth() && 
            tDate.getFullYear() === selectedDate.getFullYear();
@@ -34,9 +35,17 @@ function TodasDespesas() {
   return (
     <View style={styles.container}>
       <MonthYearFilter selectedDate={selectedDate} onDateChange={setSelectedDate} />
+      
+      <View style={styles.hintContainer}>
+        <Text style={styles.hintText}>
+          Dica: Pressione e segure um item para abrir opções de exclusão rápida.
+        </Text>
+      </View>
+
       <DespesaSaida 
         despesas={filteredDespesas} 
         periodo="Total do Mês" 
+        onRefresh={fetchDespesas}
       />
     </View>
   );
@@ -48,5 +57,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  hintContainer: {
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    backgroundColor: '#f0f0f0',
+    marginHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  hintText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });

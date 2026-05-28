@@ -1,14 +1,25 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 function getDataFormatada(dataStr) {
   const data = new Date(dataStr);
-  return data.getDate() + '/' + (data.getMonth() + 1) + '/' + data.getFullYear();
+  return (data.getDate() + 1) + '/' + (data.getMonth() + 1) + '/' + data.getFullYear();
 }
 
 function DespesaItem({ item, onLongPress }) {
+  const navigation = useNavigation();
+
+  function itemPressHandler() {
+    navigation.navigate('GerenciarDespesa', {
+      transactionId: item.id,
+      transactionData: item,
+    });
+  }
+
   return (
     <Pressable 
-      onLongPress={() => onLongPress(item)}
+      onPress={itemPressHandler}
+      onLongPress={() => onLongPress && onLongPress(item)}
       style={({ pressed }) => pressed && styles.pressed}
     >
       <View style={[styles.itemContainer, { borderLeftColor: item.category.background, borderLeftWidth: 5 }]}>

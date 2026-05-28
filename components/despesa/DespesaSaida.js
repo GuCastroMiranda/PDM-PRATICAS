@@ -6,7 +6,7 @@ import DespesaLista from './DespesaLista';
 import OptionsModal from '../ui/OptionsModal';
 import api from '../../services/api';
 
-function DespesaSaida({ despesas, periodo }) {
+function DespesaSaida({ despesas, periodo, onRefresh }) {
   const [selectedItem, setSelectedItem] = useState(null);
   const navigation = useNavigation();
 
@@ -39,7 +39,9 @@ function DespesaSaida({ despesas, periodo }) {
             try {
               await api.delete(`/transactions/${selectedItem.id}`);
               handleCloseModal();
-              // Trigger a refresh if possible, or assume it will be refreshed by screen focus
+              if (onRefresh) {
+                onRefresh(); // Chama a função de atualizar do pai
+              }
             } catch (error) {
               Alert.alert('Erro', 'Não foi possível excluir a transação.');
             }

@@ -13,9 +13,10 @@ function Resumo() {
   const fetchTransactions = useCallback(async () => {
     try {
       const response = await api.get('/transactions');
-      setTransactions(response.data);
+      setTransactions(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Erro ao buscar transações', error);
+      setTransactions([]);
     }
   }, []);
 
@@ -25,27 +26,28 @@ function Resumo() {
     }
   }, [isFocused, fetchTransactions]);
 
-  const filteredTransactions = transactions.filter(t => {
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+
+  const filteredTransactions = safeTransactions.filter(t => {
     const tDate = new Date(t.date);
     return tDate.getMonth() === selectedDate.getMonth() && 
            tDate.getFullYear() === selectedDate.getFullYear();
   });
 
   const categoryData = filteredTransactions.reduce((acc, t) => {
-    const catName = t.category.displayName;
+    const catName = t.category?.displayName || 'Outros';
     if (!acc[catName]) {
-      acc[catName] = { 
-        name: catName, 
-        population: 0, 
-        color: t.category.background, 
-        legendFontColor: '#7F7F7F', 
-        legendFontSize: 12 
+      acc[catName] = {
+        name: catName,
+        population: 0,
+        color: t.category?.background || '#ccc',
+        legendFontColor: '#7F7F7F',
+        legendFontSize: 12
       };
     }
     acc[catName].population += t.value;
     return acc;
   }, {});
-
   const chartData = Object.values(categoryData);
 
   const totalExpenses = filteredTransactions

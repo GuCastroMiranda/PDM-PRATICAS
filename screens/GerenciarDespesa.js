@@ -1,12 +1,16 @@
-import { View, Text, TextInput, StyleSheet, Pressable, Button, Alert, ScrollView } from 'react-native';
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, Pressable, Button, Alert, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useIsFocused } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import api from '../services/api';
+import IconButton from '../components/IconButton';
 
 function GerenciarDespesa({ route, navigation }) {
   const transactionId = route.params?.transactionId;
   const transactionData = route.params?.transactionData;
   const isEditing = !!transactionId;
+  const isFocused = useIsFocused();
 
   const [data, setData] = useState(isEditing ? new Date(transactionData.date) : new Date());
   const [valor, setValor] = useState(isEditing ? transactionData.value.toString() : '');
@@ -15,23 +19,21 @@ function GerenciarDespesa({ route, navigation }) {
   const [categories, setCategories] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: isEditing ? 'Editar Transação' : 'Adicionar Transação',
-    });
-  }, [navigation, isEditing]);
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await api.get('/categories');
+      setCategories(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Erro ao buscar categorias:', error);
+      setCategories([]);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const response = await api.get('/categories');
-        setCategories(response.data);
-      } catch (error) {
-        Alert.alert('Erro', 'Não foi possível carregar as categorias.');
-      }
+    if (isFocused) {
+      fetchCategories();
     }
-    fetchCategories();
-  }, []);
+  }, [isFocused, fetchCategories]);
 
   const onChange = (event, selectedDate) => {
     setShowPicker(false);
@@ -61,12 +63,6 @@ function GerenciarDespesa({ route, navigation }) {
 
     try {
       if (isEditing) {
-        // API Update category is supported but transaction update wasn't explicitly in contracts
-        // However, I'll assume we can update categories or just delete and re-create for simplicity
-        // Wait, the contract didn't have PUT /transactions. I'll add it to the backend or just implement it.
-        // For now, I'll use the Category Update as a reference and implement PUT /transactions in backend if needed.
-        // Actually, the user asked for "edição e exclusão de transações". 
-        // I'll add PUT /transactions/:id to the backend now.
         await api.put(`/transactions/${transactionId}`, payload);
       } else {
         await api.post('/transactions', payload);
@@ -118,7 +114,7 @@ function GerenciarDespesa({ route, navigation }) {
           </Pressable>
         </View>
         <View style={styles.categoriesContainer}>
-          {categories.map((cat) => (
+          {(Array.isArray(categories) ? categories : []).map((cat) => (
             <Pressable
               key={cat.id}
               style={[
